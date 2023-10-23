@@ -1,0 +1,36 @@
+#Install necessary packages, only need to do this once
+install.packages("glue")
+install.packages("ggtext")
+
+#upload library packages into R studio, need to do this every time you restart a new R session
+library("glue")
+library("ggtext")
+
+#Assign 'c' to your cvs data in MAF format used for oncoplot graphs
+c = ECOG.Arm.A.top.10.VAF
+df = data.frame(c)
+
+#Identify your genes of interest
+df$X = factor(df$Hugo_Symbol, levels = c("NOTCH1",	"SF3B1",	"ATM",	
+                                         "XPO1",	"BIRC3",	"POT1",	"TP53",	
+                                         "BRAF",	"KRAS",	"DDX3X"))
+
+p = ggplot(data = c, mapping = aes(x= df$X, y = VAF, fill = df$X))
+
+setwd("C:\\Users\\m280052\\Documents\\ECOG Arm A graphs")
+png("box plot top 10.png", units = "in", width = 8, height = 6, res = 600)
+
+p+
+  geom_boxplot(show.legend = FALSE, alpha = 0.25, outlier.shape = NA, width = 0.6, 
+               coef = 0)+
+  geom_jitter(show.legend = FALSE, width = 0.25, shape = 21, color = "black")+
+  #stat_summary(fun = median, show.legend = FALSE, geom = "crossbar", 
+  #color = "black", width = 0.6, size = 0.5)
+  ggtitle("Variant Allele Frequencies")+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Gene", 
+       y = "VAF", 
+       fill = "Gene")+
+  theme_classic()
+
+dev.off()
