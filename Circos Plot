@@ -1,0 +1,75 @@
+#Install necessary packages, only need to do this once
+install.packages("circlize")
+install.packages("yarrr")
+
+#upload library packages into R studio, need to do this every time you restart a new R session
+library(circlize)
+library("yarrr")
+
+??chordDiagram
+
+#Assign 'data' to your circos dataset
+data = AA.circos.plot
+data = as.matrix(data)
+data
+
+#Can customize the color you want each gene to be
+col = c("ATM" = "magenta",	"BCOR"= "purple",	"BIRC3" = "green",	"BRAF" = "darkblue",	"CHD2" = "black",	"CREBBP"= "black",	
+        "DDX3X" = "darkred",	"EGR2" = "brown",	"FBXW7" = "grey",	"ITPKB" = "black",	"KRAS" = "violet",	"MED12" = "lightblue",	
+        "ASXL1" = "black",	"NOTCH1"= "red",	"NRAS" = "orange",	"POT1" = "darkgray",	"BRCC3"= "black",	"ARID1A" = "black",	
+        "SETD2"= "black",	"SF3B1" = "blue",	"BAZ2A" = "black",	"TP53" = "darkmagenta",	"XPO1" = "darkorange",	"ZMYM3"= "pink", 
+        "ELF4"="black", "EWSR1"= "yellow", "FUBP1", "IKZF3"= "black", "KMT2D"="black", "MGA"= "darkgreen", "NFKBIE"= "magenta", "NXF1", "RPS15", "SETBP1"="black", "SYNE1", "TRAF2"="black", 
+        "TRAF3"= "black", "ZNF292")
+
+setwd("C:\\Users\\m280052\\Documents\\AA EB")
+png("circosplot.png", units = "in", width = 8, height = 6, res = 600)
+
+chordDiagram(data, annotationTrack = "grid", preAllocateTracks = 1, grid.col = col)
+circos.trackPlotRegion(track.index = 2, panel.fun = function(x, y) {
+  xlim = get.cell.meta.data("xlim")
+  ylim = get.cell.meta.data("ylim")
+  sector.name = get.cell.meta.data("sector.index")
+  
+  circos.text(mean(xlim), ylim[1] + 2.5, sector.name, 
+              facing = "clockwise", niceFacing = TRUE, 
+              adj = c(0, 0.5), cex = 0.5)
+  
+  circos.axis(h = "top", labels.cex = 0.5, 
+              major.tick.percentage = 0.2, 
+              sector.index =  sector.name, track.index = 2)
+}, bg.border = NA)
+
+dev.off()
+#______________________________________________________________________________________________________________________________________________________________
+
+#Circos plot showing one gene at the time
+x = AA.circos.plot.top.12
+x = as.matrix(x)
+x
+#This assigns each gene a color on the grid (outer ring)
+col2 = c("NOTCH1" = "pink",	"EGR2"="#82C0E9",	"MGA"= "darkmagenta",	"SF3B1"="#2D6D66",	"TP53"="#B96927",	"BIRC3"= "cyan",	
+         "NFKBIE"= "#BFA19C",	"MED12"= "darkred",	"BRAF"="darkgreen",	"KRAS"="orange",	"NXF1"= "darkgray",	"XPO1"="purple")
+
+#This assigns a color to the links of each gene, choose a color for one gene and make the rest of them white
+color = c( "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#BFA19C", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00", "#FFFFFF00")
+
+setwd("C:\\Users\\m280052\\Documents\\AA EB")
+png("circosplot NFKBIE.png", units = "in", width = 8, height = 6, res = 600)
+
+chordDiagram(x, annotationTrack = "grid", preAllocateTracks = 1, grid.col = col2, row.col = color, link.largest.ontop = TRUE, 
+             transparency = 0.5 )
+circos.trackPlotRegion(track.index = 2, panel.fun = function(x, y) {
+  xlim = get.cell.meta.data("xlim")
+  ylim = get.cell.meta.data("ylim")
+  sector.name = get.cell.meta.data("sector.index")
+  
+  circos.text(mean(xlim), ylim[1] + 2.5, sector.name, 
+              facing = "clockwise", niceFacing = TRUE, 
+              adj = c(0, 0.5), cex = 0.6)
+  
+  circos.axis(h = "top", labels.cex = 0.5, 
+              major.tick.percentage = 0.2, 
+              sector.index =  sector.name, track.index = 2)
+}, bg.border = NA)
+
+dev.off()
