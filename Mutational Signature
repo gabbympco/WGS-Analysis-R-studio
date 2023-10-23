@@ -1,0 +1,181 @@
+
+#Install necessary packages, only need to do this once
+
+devtools::install_github("dami82/mutSignatures", force = TRUE, build_vignettes = TRUE)
+
+install.packages("foreach")
+install.packages("mutSignatures")
+install.packages("BiocManager")
+BiocManager::install("BSgenome", version = "3.17")
+BiocManager::install("IRanges", force = TRUE)
+BiocManager::install("GenomeInfoDb", force = TRUE)
+BiocManager::install("GenomicRanges", force = TRUE)
+BiocManager::install("rtracklayer", force = TRUE)
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("BSgenome", force = TRUE)
+install.packages("dplyr")
+install.packages("reshape2")
+install.packages("kableExtra")
+install.packages("gridExtra")
+install.packages("BSgenome.Hsapiens.UCSC.hg38")
+install.packages("sqldf")
+
+#upload library packages into R studio, need to do this every time you restart a new R session
+library("foreach")
+library("mutSignatures")
+library("BiocManager")
+library("IRanges")
+library("GenomeInfoDb")
+library("GenomicRanges")
+library("rtracklayer")
+library("BSgenome")
+library("dplyr")
+library("reshape2")
+library("kableExtra")
+library("ggplot2")
+library("gridExtra")
+library(sqldf)
+library(ggplot2)
+library(dplyr)
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+install.packages("BSgenome.Hsapiens.UCSC.hg38_1.4.5.tar.gz", repos = NULL, type = "source")
+library(BSgenome.Hsapiens.UCSC.hg38)
+
+#_________________________________________________________________________________________________________
+
+#Assign 'hg38' to the hg38 reference genome
+hg38 <- BSgenome.Hsapiens.UCSC.hg38
+
+#Call the rows you want to work with for mutational signature from your dataset if needed (in this case based on sample name first column)
+#Assign 'data' to your dataset in MAF format
+data <- ALL.unfiltered.somatic_Paul.ECOG
+str(data)
+nrow(data)
+
+D2328 = data[data$Patient %in% c("D_2328_0223", "D_2328_0912", "D_2328_1214"),]
+D2328
+x = D2328
+
+####################
+
+#Assign 'x' to your dataset
+#if you don't need to call specific rows just assign x to your entire uploaded dataset Ex:x = ALL.samples.unfiltered.somatic
+
+#Filter to keep only the SNVs from your dataset 'x'
+x = filterSNV(dataSet = x,seq_colNames = c("REF", "ALT"))
+
+#View you data with filtered SNVs
+head(x)
+
+#Attach chromosomal context
+x = attachContext(mutData = x,
+                  chr_colName = "CHROM",
+                  start_colName = "POS",
+                  end_colName = "POS",
+                  nucl_contextN = 3,
+                  BSGenomeDb = hg38, 
+                  context_colName = "context")
+head(x)
+
+#Remove mismatch mutations
+x = removeMismatchMut(mutData = x,                 
+                      refMut_colName = "REF",     
+                      context_colName = "context",  
+                      refMut_format = "N")
+#Attach mutation type
+x <- attachMutType(mutData = x,                      
+                   ref_colName = "REF",              
+                   var_colName = "ALT",              
+                   context_colName = "context")
+head(x)
+####################
+
+#Should count 96 different mutation combinations
+cll.counts <- countMutTypes(mutTable = x,
+                            mutType_colName = "mutType",
+                            sample_colName = "Patient")
+print(cll.counts)
+####################
+
+#Tell code to identify 4 distinct signatures
+num.sign <- 4
+cll.params <- 
+  mutSignatures::setMutClusterParams( 
+    num_processesToExtract = num.sign,    # num signatures to extract
+    num_totIterations = 20,               # bootstrapping: usually 500-1000
+    num_parallelCores = 4)
+
+setwd("C:\\Users\\m280052\\Documents\\michelson somatic Mutsig")
+png("TP2_M sig.png", units = "in", width = 9, height = 6, res = 600)
+####################
+
+#Silouhette PLot showing the quality of the 4 signatures identified
+cll.analysis <- 
+  decipherMutationalProcesses(input = cll.counts,
+                              params = cll.params)
+dev.off()
+
+cll.sig <- cll.analysis$Results$signatures
+cll.exp <- cll.analysis$Results$exposures
+####################
+
+setwd("C:\\Users\\m280052\\Documents\\michelson somatic Mutsig")
+png("TP2_M sign.01.png", units = "in", width = 9, height = 3, res = 600)
+
+#Signature plot, run it for signatures 1-4
+msigPlot(cll.sig, signature = 1, ylim = c(0, 0.10))
+dev.off()
+####################
+
+setwd("C:\\Users\\m280052\\Documents\\michelson somatic Mutsig")
+png("TP2_M plot exposure.png", units = "in", width = 9, height = 6, res = 600)
+
+#Plot exposures (ggplot2 object, you can customize as any other ggplot2 object)
+
+msigPlot(cll.exp, show("Patient")) +
+  scale_fill_manual(values = c("#1f78b4", "#cab2d6", "#ff7f00", "#a6cee3")) 
+
+dev.off()
+####################
+
+# Export Signatures as data.frame
+xprt <- coerceObj(x = cll.sig, to = "data.frame") 
+head(xprt) %>% kable() %>% kable_styling(bootstrap_options = "striped")
+####################
+
+
+# Get signatures from data (imported as data.frame) 
+# and then convert it to mutSignatures object
+cosmixSigs <- mutSigData$blcaSIGS %>% 
+  dplyr::select(starts_with("COSMIC")) %>% 
+  as.mutation.signatures()
+
+#blcaKnwnSigs <- mutSigData$blcaSIGS %>% 
+  #dplyr::select(starts_with("CLL")) %>% 
+  #as.mutation.signatures()
+####################
+
+cosmic = mutSignatures::getCosmicSignatures()
+# Compare de-novo signatures with selected COSMIC signatures
+msig1 <- matchSignatures(mutSign = cll.sig, reference = cosmic, 
+                         threshold = 0.45, plot = TRUE) 
+#msig2 <- matchSignatures(mutSign = blca.sig, reference = blcaKnwnSigs, 
+                         #threshold = 0.45, plot = TRUE)
+####################
+
+# Visualize match
+# signature 1 is similar to COSMIC ; 
+# signatures 2 and 3 are similar to COSMIC
+# Here, we should probably extract only 2 mutational signatures
+hm1 <- msig1$plot + ggtitle("Match to COSMIC signs.")
+#hm2 <- msig2$plot + ggtitle("Match to known ECOG signs.")
+####################
+
+setwd("C:\\Users\\m280052\\Documents\\michelson somatic Mutsig")
+png("TP2_M cosmic.png", units = "in", width = 9, height = 6, res = 600)
+
+#PLot comparing our 4 signatures to 30 known COSMIC signatures
+grid.arrange(hm1, ncol = 1)
+dev.off()
