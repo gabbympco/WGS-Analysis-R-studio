@@ -1,0 +1,149 @@
+#Install necessary packages, only need to do this once
+install.packages("maftools")
+install.packages("ggplot2")
+install.packages("tidyverse")
+install.packages("Hmisc")
+
+#upload library packages into R studio, need to do this every time you restart a new R session
+
+library(maftools)
+library ("ggplot2")
+library("tidyverse")
+library("Hmisc")
+
+#How to save files with high DPI/resolution
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap") #set your working directory, location of where you want image saved
+png("Plot_Summary.png", units = "in", width = 9, height = 6, res = 300) #title of png and dimension & resolution specifications
+
+#here will go your code for the graph you are creating Ex: plotmafSummary(maf=wgs, rmOutlier = TRUE, addStat= 'median', dashboard = TRUE, titvRaw = FALSE)
+
+dev.off() #highlight from setwd to the end of dev.off() and control enter, this will plot your graph and download the image at its location
+____________________________________________________________________________________________________________________
+
+#Read your csv file as a MAF file
+
+wgs = read.maf(
+  maf = file_name_for_MAF, rmFlags = FALSE,
+  removeDuplicatedVariants = FALSE,
+  useAll = TRUE, cnLevel = "all", isTCGA = FALSE,
+  verbose = TRUE, vc_nonSyn = NULL)
+
+maf_data_view <- wgs@data
+maf_gene.summary <- wgs@gene.summary
+________________________________________________________________________________________________________________
+#Plot summary figure
+??plotmafSummary
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("Plot_Summary.png", units = "in", width = 9, height = 6, res = 300)
+
+plotmafSummary(maf=wgs, rmOutlier = TRUE, addStat= 'median', dashboard = TRUE, titvRaw = FALSE)
+
+dev.off()
+____________________________________________________________________________________________________________________
+#MAF bar plot showing percent of patients with particular gene mutation
+??mafbarplot
+
+mafbarplot(maf=wgs)
+#____________________________________________________________________________________________________________________
+#Oncoplot figure
+??oncoplot
+
+#Can customize the order you want the samples to be displayed
+#Assign sample_order as a list of your samples
+sample_order = c("B19005E",	"B19130E",	"B19139E",	"B19145E",	"B19221E",	"B19317E",	"B19347E",	"B19390E",	"B19405E",	"B19447E",	"B19493E",	"B19020E",	"B19055E",	"B19066E",	"B19159E",	"B19189E",	"B19227E",	"B19239E",	"B19251E",	"B19282E",	"B19306E",	"B19321E",	"B19365E",	"B19368E",	"B19370E",	"B19384E",	"B19386E",	"B19411E",	"B19500E",	"B19008",	"B19020",	"B19022",	"B19055",	"B19062",	"B19111",	"B19179",	"B19189",	"B19221",	"B19227",	"B19239",	"B19284",	"B19411",	"B19421",	"B19500",	"D_2314_0214",	"D_2328_0912",	"D_2509_0516",	"D_2588_1115",	"D_2832_1112",	"D_2841_0814",	"D_2877_1214",	"D_3035_0115",	"D_3089_0715",	"D_3177_1013",	"D_3268_0813",	"D_3365_0514",	"IV1634TP1",	"IV3396TP1",	"IV3606TP1"
+)
+
+setwd("C:\\Users\\m280052\\Documents\\michelson_Paul_WGSecog_WESecog")
+png("TP2.Oncoplot.png", units = "in", width = 12, height = 9, res = 300)
+
+oncoplot(maf=wgs, draw_titv = TRUE, showTumorSampleBarcodes = TRUE, 
+         sampleOrder = sample_order, removeNonMutated = FALSE, top = 1000, leftBarData = NULL, fontSize = 0.3, barcode_mar = 5.5 )
+dev.off()
+
+#Can also add VAF information: If you do this may need to run this before the oncoplot function
+
+#Identify genes that you want VAF displayed for
+genes = c("NRAS",	"ITPKB",	"EGR2",	"BIRC3",	"ATM",	"KRAS",	"RB1",	"CHD2",	"CREBBP",	"TP53",	"SF3B1",	"XPO1",	
+"SAMHD1",	"TBL1XR1",	"MYD88",	"SETD2",	"FBXW7",	"POT1",	"BRAF",	"NOTCH1",	"BCOR",	
+"DDX3X",	"MED12",	"ZMYM3")
+
+#Code to add VAF info
+VAF = subsetMaf(maf = wgs, genes = genes, fields = "VAF", mafObj = FALSE)[,mean(VAF, na.rm = TRUE), Hugo_Symbol]
+colnames(VAF)[2] = "VAF"
+head(VAF)
+#____________________________________________________________________________________________________________________
+#Transition and Transversion summary plot
+??plottitv
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("TITV.png", units = "in", width = 9, height = 6, res = 300)
+
+tit.titv = titv(maf=wgs, plot = FALSE, useSyn= FALSE)
+plotTiTv(res = tit.titv, showBarcodes = FALSE, sampleOrder = NULL)
+
+dev.off()
+
+#____________________________________________________________________________________________________________________
+#Lollipop graph showing Amino Acid mutation location
+??lollipopPlot
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("NOTCH1 lolli2.png", units = "in", width = 10, height = 6, res = 600)
+lollipopPlot(maf = wgs, 
+             gene = 'NOTCH1',
+             AACol = 'AAChange',
+             showMutationRate = TRUE,
+             defaultYaxis = FALSE,
+             labelPos = 2514,
+             showDomainLabel = FALSE,
+             collapsePosLabel = FALSE, 
+             domainBorderCol = TRUE,
+             bgBorderCol= NA)
+dev.off()
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("TP53 lolli.png", units = "in", width = 10, height = 6, res = 300)
+lollipopPlot(maf = wgs, 
+             gene = 'TP53',
+             AACol = 'AAChange',
+             showMutationRate = TRUE,
+             defaultYaxis = TRUE,
+             labelPos = NULL,
+             showDomainLabel = TRUE,
+             collapsePosLabel = FALSE, 
+             domainBorderCol = TRUE,
+             bgBorderCol= NA,
+             labPosAngle = 45)
+dev.off()
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("SF3B1 lolli.png", units = "in", width = 10, height = 6, res = 300)
+lollipopPlot(maf = wgs, 
+             gene = 'SF3B1',
+             AACol = 'AAChange',
+             showMutationRate = TRUE,
+             defaultYaxis = TRUE,
+             labelPos = 700,
+             showDomainLabel = FALSE,
+             collapsePosLabel = FALSE, 
+             domainBorderCol = TRUE,
+             bgBorderCol= NA, 
+             printCount = TRUE)
+dev.off()
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("ATM lolli.png", units = "in", width = 10, height = 6, res = 300)
+lollipopPlot(maf = wgs, 
+             gene = 'ATM',
+             AACol = 'AAChange',
+             showMutationRate = TRUE,
+             defaultYaxis = TRUE,
+             labelPos = NULL,
+             showDomainLabel = FALSE,
+             collapsePosLabel = FALSE, 
+             domainBorderCol = TRUE,
+             bgBorderCol= NA, 
+             printCount = TRUE)
+dev.off()
