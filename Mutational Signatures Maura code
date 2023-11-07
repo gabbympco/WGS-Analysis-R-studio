@@ -10,6 +10,14 @@ library(GenomicRanges)
 library(GenomicFeatures)
 library(BSgenome)
 library("NMF")
+
+#only do the following once... skip to line 21 if done so already
+# follow this link to download hg38 reference genome, scroll down to bottom of page and download 'BSgenome.Hsapiens.UCSC.hg38_1.4.5.tar.gz': https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html
+#set working directory to location of hg38 genome you just downloaded
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+#install hg38
+install.packages("BSgenome.Hsapiens.UCSC.hg38_1.4.5.tar.gz", repos = NULL, type = "source")
+
 library(BSgenome.Hsapiens.UCSC.hg38)
 ##################################
 
