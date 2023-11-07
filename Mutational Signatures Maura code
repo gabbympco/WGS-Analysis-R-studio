@@ -24,7 +24,9 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 ref_genome <- BSgenome.Hsapiens.UCSC.hg38
 ##################################
 
-cave_filter = ALL.samples.unfiltered.somatic.SNVs.only
+#Assign 'cava_filter' variable to uploaded csv dataset with headers Patient, CHROM, POS, REF, ALT
+cave_filter = csv.file.name
+
 colnames(cave_filter)<- c("Patient","CHROM","POS","REF","ALT")
 cave_filter$chr<- paste("chr",cave_filter$CHROM,sep="")
 
