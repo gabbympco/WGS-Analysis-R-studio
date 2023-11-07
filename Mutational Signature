@@ -39,8 +39,15 @@ library(sqldf)
 library(ggplot2)
 library(dplyr)
 
+
+# follow this link to download hg38 reference genome, scroll down to bottom of page and download 'BSgenome.Hsapiens.UCSC.hg38_1.4.5.tar.gz': https://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg38.html
+
+#set working directory to location of hg38 genome you just downloaded
 setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+
+#install hg38
 install.packages("BSgenome.Hsapiens.UCSC.hg38_1.4.5.tar.gz", repos = NULL, type = "source")
+
 library(BSgenome.Hsapiens.UCSC.hg38)
 
 #_________________________________________________________________________________________________________
@@ -49,19 +56,23 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 hg38 <- BSgenome.Hsapiens.UCSC.hg38
 
 #Call the rows you want to work with for mutational signature from your dataset if needed (in this case based on sample name first column)
-#Assign 'data' to your dataset in MAF format
+#Assign variable 'data' to your dataset in MAF format
 data <- ALL.unfiltered.somatic_Paul.ECOG
 str(data)
 nrow(data)
 
+
+#assign variable 'D2328' to select rows you want from your dataset, in this case we only want patient D2328, customize variable name as needed
 D2328 = data[data$Patient %in% c("D_2328_0223", "D_2328_0912", "D_2328_1214"),]
 D2328
+
+#Assign 'x' to your final dataset
 x = D2328
 
 ####################
 
-#Assign 'x' to your dataset
-#if you don't need to call specific rows just assign x to your entire uploaded dataset Ex:x = ALL.samples.unfiltered.somatic
+
+#if you don't need to call specific rows just assign x to your entire uploaded dataset Ex: x = name.of.csv.file
 
 #Filter to keep only the SNVs from your dataset 'x'
 x = filterSNV(dataSet = x,seq_colNames = c("REF", "ALT"))
