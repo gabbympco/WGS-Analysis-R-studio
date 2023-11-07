@@ -1,5 +1,8 @@
 #Install necessary packages, only need to do this once
-install.packages("maftools")
+if (!require("BiocManager"))
+  install.packages("BiocManager")
+BiocManager::install("maftools")
+
 install.packages("ggplot2")
 install.packages("tidyverse")
 install.packages("Hmisc")
@@ -14,12 +17,12 @@ library("Hmisc")
 #How to save files with high DPI/resolution
 
 setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap") #set your working directory, location of where you want image saved
-png("Plot_Summary.png", units = "in", width = 9, height = 6, res = 300) #title of png and dimension & resolution specifications
+png("Plot_Summary.png", units = "in", width = 9, height = 6, res = 300) #title of png, dimension & resolution specifications
 
 #here will go your code for the graph you are creating Ex: plotmafSummary(maf=wgs, rmOutlier = TRUE, addStat= 'median', dashboard = TRUE, titvRaw = FALSE)
 
 dev.off() #highlight from setwd to the end of dev.off() and control enter, this will plot your graph and download the image at its location
-____________________________________________________________________________________________________________________
+#____________________________________________________________________________________________________________________
 
 #Read your csv file as a MAF file
 
@@ -31,7 +34,7 @@ wgs = read.maf(
 
 maf_data_view <- wgs@data
 maf_gene.summary <- wgs@gene.summary
-________________________________________________________________________________________________________________
+#____________________________________________________________________________________________________________________
 #Plot summary figure
 ??plotmafSummary
 
@@ -41,7 +44,7 @@ png("Plot_Summary.png", units = "in", width = 9, height = 6, res = 300)
 plotmafSummary(maf=wgs, rmOutlier = TRUE, addStat= 'median', dashboard = TRUE, titvRaw = FALSE)
 
 dev.off()
-____________________________________________________________________________________________________________________
+#____________________________________________________________________________________________________________________
 #MAF bar plot showing percent of patients with particular gene mutation
 ??mafbarplot
 
@@ -82,6 +85,27 @@ png("TITV.png", units = "in", width = 9, height = 6, res = 300)
 
 tit.titv = titv(maf=wgs, plot = FALSE, useSyn= FALSE)
 plotTiTv(res = tit.titv, showBarcodes = FALSE, sampleOrder = NULL)
+
+dev.off()
+#____________________________________________________________________________________________________________________
+#VAF box plot
+??plotVaf
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("VAF.png", units = "in", width = 9, height = 6, res = 300)
+
+plotVaf(maf = wgs, vafCol = "VAF")
+
+dev.off()
+
+#____________________________________________________________________________________________________________________
+#Somatic interactions
+??somaticInteractions
+
+setwd("C:\\Users\\m280052\\Documents\\Gabby Heatmap")
+png("interactions.png", units = "in", width = 9, height = 6, res = 300)
+
+somaticInteractions(maf = wgs, top = 100, pvalue = c(0.05, 0.1))
 
 dev.off()
 
